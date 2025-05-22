@@ -87,9 +87,9 @@ public class ModuleIOSim implements ModuleIO {
     }
 
     @Override
-    public void velocityTurn(double velocity){
+    public void positionTurn(Rotation2d position){
         turnClosedLoop = true;
-        turnController.setSetpoint(velocity);
+        turnController.setSetpoint(position.getRadians());
     }
 
 

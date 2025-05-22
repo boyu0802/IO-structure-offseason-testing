@@ -39,7 +39,7 @@ public interface ModuleIO {
     public default void voltageDrive(double voltage){};
     public default void voltageTurn(double voltage){};
     public default void velocityDrive(double velocity, double ff){};
-    public default void velocityTurn(double velocity){};
+    public default void positionTurn(Rotation2d position){};
 
     public default void setDrivePID(double kP, double kI, double kD){};
     public default void setTurnPID(double kP, double kI, double kD){};
