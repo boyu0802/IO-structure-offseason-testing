@@ -14,7 +14,7 @@ public class ModuleIOSim implements ModuleIO {
     private static final DCMotor turnMotor = DCMotor.getKrakenX60(1);
 
     private final DCMotorSim driveSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(driveMotor, 1, 1), driveMotor);
-    private final DCMotorSim turnSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(driveMotor, 0, 0), driveMotor);
+    private final DCMotorSim turnSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(turnMotor, 0, 0), turnMotor);
 
     private boolean driveClosedLoop = false;
     private boolean turnClosedLoop = false;

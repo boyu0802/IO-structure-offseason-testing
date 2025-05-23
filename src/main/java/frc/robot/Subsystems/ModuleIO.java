@@ -36,8 +36,11 @@ public interface ModuleIO {
 
 
     public default void updateInputs(ModuleIOInputs input){};
+
+
     public default void voltageDrive(double voltage){};
     public default void voltageTurn(double voltage){};
+    
     public default void velocityDrive(double velocity, double ff){};
     public default void positionTurn(Rotation2d position){};
 
