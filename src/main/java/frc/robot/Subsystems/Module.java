@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -12,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
+import frc.robot.Util.Constants;
 import frc.robot.Util.LoggedTracer;
 import frc.robot.Util.LoggedTunableNumber;
 
@@ -24,14 +26,27 @@ public class Module {
     private static final LoggedTunableNumber turnKp = new LoggedTunableNumber("Drivetrain/Module/TurnKp");
     private static final LoggedTunableNumber turnKd = new LoggedTunableNumber("Drivetrain/Module/TurnKd");
 
-    static{ //TODO TEST Values
-        driveKs.initDefault(5.0);
-        driveKv.initDefault(0);
-        driveKt.initDefault(ModuleIOKraken.gearRatio / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
-        driveKp.initDefault(35);
-        driveKd.initDefault(0);
-        turnKp.initDefault(4000);
-        turnKd.initDefault(50.0);
+    static{
+        switch (Constants.getRobotType()) {
+            case Real,Replay: //TODO: test value in amps(current control)
+                driveKs.initDefault(5.0);   
+                driveKv.initDefault(0);
+                driveKt.initDefault(ModuleIOKraken.gearRatio / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
+                driveKp.initDefault(35);
+                driveKd.initDefault(0);
+                turnKp.initDefault(4000);
+                turnKd.initDefault(50.0);
+            case Sim://TODO test values in voltage(Sim is in voltage)
+                driveKs.initDefault(5.0);   
+                driveKv.initDefault(0);
+                driveKt.initDefault(0); 
+                driveKp.initDefault(35);
+                driveKd.initDefault(0);
+                turnKp.initDefault(4000);
+                turnKd.initDefault(50.0);
+                
+        } 
+
     }
 
     public final ModuleIO io;
@@ -83,6 +98,7 @@ public class Module {
             odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
         }
 
+
         driveDisconnected.set(!inputs.data.driveConnected());
         turnDisconnected.set(!inputs.data.turnConnected());
         turnEncoderDisconnected.set(!inputs.data.turnEncoderConnected());
@@ -98,7 +114,7 @@ public class Module {
 
     public void runSetpoint(SwerveModuleState state, double desiredWheelTorque){
         double speedRadPerSec = state.speedMetersPerSecond / DrivetrainConstants.kWheelRadius;
-        double ff = ffModel.calculate(speedRadPerSec) + (driveKt.get() * desiredWheelTorque);
+        double ff = ffModel.calculate(speedRadPerSec) + (driveKt.get() * desiredWheelTorque); //ff is in amps
         io.velocityDrive(speedRadPerSec, ff);
         io.positionTurn(state.angle);
     }
@@ -106,11 +122,6 @@ public class Module {
     public void runCharacterization(double voltage){
         io.voltageDrive(voltage);
         io.positionTurn(Rotation2d.kZero);
-    }
-
-    public void stop(){
-        io.voltageDrive(0.0);
-        io.voltageTurn(0.0);
     }
 
     public double getPositionMeters(){
