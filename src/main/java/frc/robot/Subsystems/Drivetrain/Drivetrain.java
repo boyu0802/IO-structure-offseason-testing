@@ -1,4 +1,4 @@
-package frc.robot.Subsystems;
+package frc.robot.Subsystems.Drivetrain;
 
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -13,16 +13,23 @@ import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotState;
+import frc.robot.Subsystems.GyroInputsAutoLogged;
+import frc.robot.Util.Constants;
+import frc.robot.Util.LoggedTracer;
 import frc.robot.Util.LoggedTunableNumber;
 
 
@@ -33,12 +40,6 @@ public class Drivetrain extends SubsystemBase{
     private final GyroInputsAutoLogged gyroInputs = new GyroInputsAutoLogged();
     private final Module[] modules = new Module[4];
     private final Alert gyroDisconnectedAlert = new Alert("Gyro is disconnected", Alert.AlertType.kError);
-
-    private static final LoggedTunableNumber coastWaitTime = new LoggedTunableNumber("Drivetrain/CoastWaitTime",0.5);
-    private static final LoggedTunableNumber coastMPSThreshold = new LoggedTunableNumber("Drivetrain/CoastMPSThreshold",0.05);
-
-    private final Timer lastMovementTimer = new Timer();
-
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DrivetrainConstants.modulePositions);// FL,FR,BL,BR
 
     @AutoLogOutput private boolean velocityMode = false;
@@ -52,10 +53,44 @@ public class Drivetrain extends SubsystemBase{
         for (int i = 0; i < modules.length; i++) {
             modules[i] = new Module(moduleIOs[i], i);
         }
-        lastMovementTimer.start();
         setBrakeMode(true);
-        this.setpointGenerator = new SwerveSetpointGenerator(DrivetrainConstants.getRobotConfig(),DrivetrainConstants.kDriveTrainMaxAngularVelocityRadsPerSec);
+        this.setpointGenerator = new SwerveSetpointGenerator(DrivetrainConstants.kRobotConfig,DrivetrainConstants.kDriveTrainMaxAngularVelocityRadsPerSec);
+        OdometryThread.getOdometryThreadInstance().start();
     }   
+
+
+    public void periodic(){
+        odometryLock.lock();
+        gyro.updateInputs(gyroInputs);
+        Logger.processInputs("Drivetrain/gyroInputs", gyroInputs);
+        for(var module : modules){
+            module.updateInputs();
+        }
+        LoggedTracer.record("Drivetrain/moduleInputs");
+        odometryLock.unlock();
+
+        for(var module : modules){
+            module.periodic();
+        }
+        
+
+        double[] sampleTimeStamps = 
+            Constants.getRobotType() == Constants.RobotMode.Sim 
+            ? new double[]{Timer.getFPGATimestamp()} 
+            : gyroInputs.odometryYawTimestamps;
+        int sampleCount = sampleTimeStamps.length;
+        for(int i = 0; i < sampleCount; i++){
+            SwerveModulePosition[] wheelPosition = new SwerveModulePosition[4];
+            SwerveModuleState[] moduleStates = new SwerveModuleState[4];
+            for(int j = 0; j < 4; j++){
+                wheelPosition[j] = modules[j].getOdometryPositions()[i];
+            }
+            RobotState.getInstance().addOdometry(new RobotState.OdometryRecord(sampleTimeStamps[i], wheelPosition, gyroInputs.odometryYawPositions[i]));
+
+        }
+
+        
+    }
 
     public void runVelocity(ChassisSpeeds speeds){
         velocityMode = true;

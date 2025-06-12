@@ -1,9 +1,11 @@
-package frc.robot.Subsystems;
+package frc.robot.Subsystems.Drivetrain;
 
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -54,7 +56,7 @@ public class ModuleIOSim implements ModuleIO {
         input.data = new ModuleIOData(true, driveSim.getAngularPositionRad(), driveSim.getAngularVelocityRadPerSec(), driveAppliedVolts, Math.abs(driveSim.getCurrentDrawAmps()),0.0 , true, true, new Rotation2d(turnSim.getAngularPositionRad()), new Rotation2d(turnSim.getAngularPositionRad()), turnSim.getAngularVelocityRadPerSec(), turnAppliedVolts, Math.abs(turnSim.getCurrentDrawAmps()), 0.0);
         input.odometryDrivePositionsRad = new double[]{input.data.drivePositionRad()};
         input.odometryTurnPositions = new Rotation2d[]{input.data.turnPositionRad()};
-    
+         
     }
 
     @Override

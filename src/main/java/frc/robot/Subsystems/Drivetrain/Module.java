@@ -1,4 +1,4 @@
-package frc.robot.Subsystems;
+package frc.robot.Subsystems.Drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -8,11 +8,13 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
+import frc.robot.Subsystems.ModuleIOInputsAutoLogged;
 import frc.robot.Util.Constants;
 import frc.robot.Util.LoggedTracer;
 import frc.robot.Util.LoggedTunableNumber;
@@ -31,7 +33,7 @@ public class Module {
             case Real,Replay: //TODO: test value in amps(current control)
                 driveKs.initDefault(5.0);   
                 driveKv.initDefault(0);
-                driveKt.initDefault(ModuleIOKraken.gearRatio / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
+                driveKt.initDefault(DrivetrainConstants.DriveMotorGearRatio / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
                 driveKp.initDefault(35);
                 driveKd.initDefault(0);
                 turnKp.initDefault(4000);
@@ -48,6 +50,8 @@ public class Module {
         } 
 
     }
+
+    
 
     public final ModuleIO io;
     public final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
@@ -89,6 +93,7 @@ public class Module {
             io.setTurnPID(turnKp.get(), 0, turnKd.get());
         }
 
+        
 
         int sampleCount = inputs.odometryDrivePositionsRad.length;
         odometryPositions = new SwerveModulePosition[sampleCount];
@@ -143,6 +148,7 @@ public class Module {
     public SwerveModulePosition[] getOdometryPositions(){
         return odometryPositions;
     }
+
 
     public Rotation2d getAngle(){
         return inputs.data.turnPositionRad();

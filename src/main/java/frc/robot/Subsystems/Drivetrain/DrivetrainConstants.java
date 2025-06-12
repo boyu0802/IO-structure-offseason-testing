@@ -1,0 +1,109 @@
+package frc.robot.Subsystems.Drivetrain;
+
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+
+
+//TODO check all constants
+public class DrivetrainConstants {
+    public static final double kDeadband = 0.02;
+
+    public static final double kWheelRadius = Units.inchesToMeters(4);
+    public static final double kDriveTrainWidth = Units.inchesToMeters(24.6);
+    public static final double kDriveTrainLength = Units.inchesToMeters(24.6);;//todo: real value
+    public static final double kDriveTrainMaxSpeedMPS = 3.0; //TODO: real value
+    public static final double kDriveTrainMaxAngularVelocityRadsPerSec = Math.PI; //TODO: real value
+    public static final double kLoopTime = 0.02;
+    public static final double odometryFrequency = 250.0; //Hz, how often the odometry thread runs, this should be higher than the loop time of the robot code to ensure that the odometry is updated more frequently than the robot code runs. 
+    
+    public static final double ROBOT_MASS_KG = 60.0; //TODO: real value, mass of the robot in kg
+    public static final double ROBOT_MOI = 10.0; //TODO: real value, moment of inertia of the robot in kg*m^2
+    public static final double WHEEL_COF = 0.8; //TODO: real value, coefficient of friction of the wheels, this is used to calculate the maximum acceleration of the robot based on the mass and the coefficient of friction
+    
+    public static final double DriveMotorGearRatio = 4.5; //TODO: real value, gear ratio of the drive motor, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
+    public static final double TurnMotorGearRatio = 20.0; //TODO: real value, gear ratio of the turn motor, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
+    public static final double SlipCurrent = 0.5; //TODO: real value, current in amps that the motor will slip at, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
+   
+   public static final double CurrentLimit = 80;
+   public static final double TurnCurrentLimit = 40;
+   
+    //positive x is front, positive y is left.
+    // FL,FR,BL,BR
+    public static final Translation2d[] modulePositions = new Translation2d[]{
+        new Translation2d(Units.inchesToMeters(kDriveTrainLength / 2), Units.inchesToMeters(kDriveTrainWidth / 2)),
+        new Translation2d(Units.inchesToMeters(kDriveTrainLength / 2), Units.inchesToMeters(-kDriveTrainWidth / 2)),
+        new Translation2d(Units.inchesToMeters(-kDriveTrainLength / 2), Units.inchesToMeters(kDriveTrainWidth / 2)),
+        new Translation2d(Units.inchesToMeters(-kDriveTrainLength / 2), Units.inchesToMeters(-kDriveTrainWidth / 2))
+    };
+
+    public static final RobotConfig kRobotConfig = new RobotConfig(
+        ROBOT_MASS_KG,
+        ROBOT_MOI,
+        new ModuleConfig(
+            kWheelRadius,
+            kDriveTrainMaxSpeedMPS,
+            WHEEL_COF,
+            DCMotor.getKrakenX60Foc(1)
+                .withReduction(DriveMotorGearRatio),
+            SlipCurrent,
+            1),
+        modulePositions);
+
+    public static final ModuleConstants FLModuleConstants = new ModuleConstants(
+        1,
+        2,
+        1, 
+        InvertedValue.CounterClockwise_Positive,
+        SensorDirectionValue.CounterClockwise_Positive,
+        new Rotation2d()
+        ); 
+
+    public static final ModuleConstants FRModuleConstants = new ModuleConstants(
+        3,
+        4,
+        2,
+        InvertedValue.CounterClockwise_Positive,
+        SensorDirectionValue.CounterClockwise_Positive,
+        new Rotation2d()
+        ); 
+
+
+    public static final ModuleConstants BLModuleConstants = new ModuleConstants(
+        5,
+        6,
+        3,
+        InvertedValue.CounterClockwise_Positive,
+        SensorDirectionValue.CounterClockwise_Positive,
+        new Rotation2d()
+        ); 
+
+
+    public static final ModuleConstants BRModuleConstants = new ModuleConstants(
+        7,
+        8,
+        4,
+        InvertedValue.CounterClockwise_Positive,
+        SensorDirectionValue.CounterClockwise_Positive,
+        new Rotation2d()
+        ); 
+
+    public record ModuleConstants(
+        int driveMotorID,
+        int angleMotorID,
+        int cancoderID,
+        InvertedValue angleInvertedValue,
+        SensorDirectionValue cancoderDirectionValue,
+        Rotation2d angleOffset
+    ){}
+
+    
+
+}
+

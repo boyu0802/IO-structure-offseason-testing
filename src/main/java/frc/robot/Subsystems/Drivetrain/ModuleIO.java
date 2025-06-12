@@ -1,8 +1,9 @@
-package frc.robot.Subsystems;
+package frc.robot.Subsystems.Drivetrain;
 
 import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 public interface ModuleIO {
 
@@ -14,7 +15,6 @@ public interface ModuleIO {
 
         public double[] odometryDrivePositionsRad = new double[]{};
         public Rotation2d[] odometryTurnPositions = new Rotation2d[]{}; 
-
     }
 
     public record ModuleIOData(
