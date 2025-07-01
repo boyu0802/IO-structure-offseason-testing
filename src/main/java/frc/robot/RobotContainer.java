@@ -5,8 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ser.std.CalendarSerializer;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,9 +29,14 @@ public class RobotContainer {
   private XboxController driverController = new XboxController(0);
 
   public RobotContainer() {
+
+    
     // FL,FR,BL,BR
     switch (Constants.getRobotType()) {
-      case Real:
+      case Real->{
+      System.out.println("Running in real mode");
+
+
         drive = new Drivetrain(
           new GyroIOPigeon(new Pigeon2(0)),
           new ModuleIOKraken(DrivetrainConstants.FLModuleConstants),
@@ -43,8 +46,9 @@ public class RobotContainer {
         );
 
         vision = new VisionSubsystem(new LimelightIOReal());
-
-      case Sim: 
+      }
+      case Sim->{ 
+        System.out.println("Running in simulation mode");
         drive = new Drivetrain(
           new GyroIO() {}, 
           new ModuleIOSim(),
@@ -53,7 +57,10 @@ public class RobotContainer {
           new ModuleIOSim());    
 
         vision = new VisionSubsystem(new VisionIO(){});
-      case Replay:
+      }
+      case Replay->{
+        System.out.println("Running in Replay mode");
+
         drive = new Drivetrain(
           new GyroIO() {}, 
           new ModuleIO() {},
@@ -62,17 +69,18 @@ public class RobotContainer {
           new ModuleIO() {});    
 
         vision = new VisionSubsystem(new VisionIO(){});
+      }
     } 
 
     
-    drive.setDefaultCommand(
-      new DriveCommand(
-        drive,
-        () -> -driverController.getLeftY(),
-        () -> driverController.getLeftX(),
-        () -> driverController.getRightX()
-      )
-    );
+    // drive.setDefaultCommand(
+    //   new DriveCommand(
+    //     drive,
+    //     () -> -driverController.getLeftY(),
+    //     () -> driverController.getLeftX(),
+    //     () -> driverController.getRightX()
+    //   )
+    // );
     
 
     configureBindings();

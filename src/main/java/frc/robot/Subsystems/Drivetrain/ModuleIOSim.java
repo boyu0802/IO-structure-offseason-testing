@@ -1,6 +1,9 @@
 package frc.robot.Subsystems.Drivetrain;
 
 
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -32,6 +35,7 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void updateInputs(ModuleIOInputs input){
+
         if(driveClosedLoop){
             driveAppliedVolts = driveFFVolts + driveController.calculate(driveSim.getAngularVelocityRadPerSec());
         }else{
@@ -50,7 +54,7 @@ public class ModuleIOSim implements ModuleIO {
         driveSim.update(0.02);
         turnSim.update(0.02);
 
-
+        
         input.data = new ModuleIOData(true, driveSim.getAngularPositionRad(), driveSim.getAngularVelocityRadPerSec(), driveAppliedVolts, Math.abs(driveSim.getCurrentDrawAmps()),0.0 , true, true, new Rotation2d(turnSim.getAngularPositionRad()), new Rotation2d(turnSim.getAngularPositionRad()), turnSim.getAngularVelocityRadPerSec(), turnAppliedVolts, Math.abs(turnSim.getCurrentDrawAmps()), 0.0);
         input.odometryTimestamps = new double[]{Timer.getFPGATimestamp()};
         input.odometryDrivePositionsRad = new double[]{input.data.drivePositionRad()};

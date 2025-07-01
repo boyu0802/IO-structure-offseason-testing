@@ -62,14 +62,10 @@ public class Drivetrain extends SubsystemBase{
         gyro.updateInputs(gyroInputs);
         Logger.processInputs("Drivetrain/gyroInputs", gyroInputs);
         for(var module : modules){
-            module.updateInputs();
+            module.periodic();
         }
         LoggedTracer.record("Drivetrain/moduleInputs");
         odometryLock.unlock();
-
-        for(var module : modules){
-            module.periodic();
-        }
         
 
         double[] sampleTimeStamps = modules[0].getOdometryTimestamps();

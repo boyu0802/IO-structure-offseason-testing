@@ -26,6 +26,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("Project Name", "Offseason Testing");
     Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
     if(isReal()){
+      System.out.println("rEAL");
       Logger.addDataReceiver(new WPILOGWriter());
       Logger.addDataReceiver(new NT4Publisher());
     }else{

@@ -5,9 +5,10 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class Constants {
-    public static boolean tuningMode = false;
-    public static boolean disableHAL = true;
+    public static boolean tuningMode = true;
+    public static boolean disableHAL = false;
 
+    @AutoLogOutput
     public static final RobotMode fakeRobotMode = RobotMode.Sim;
 
     @AutoLogOutput

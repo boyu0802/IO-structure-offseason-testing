@@ -2,13 +2,7 @@ package frc.robot.Subsystems.Drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -19,7 +13,7 @@ import frc.robot.Util.LoggedTracer;
 import frc.robot.Util.LoggedTunableNumber;
 
 public class Module {
-    private static final LoggedTunableNumber driveKs = new LoggedTunableNumber("/Tuning/WOW/Module/DriveKs");
+    private static final LoggedTunableNumber driveKs = new LoggedTunableNumber("WOW/Module/DriveKs",80);
     private static final LoggedTunableNumber driveKv = new LoggedTunableNumber("Drivetrain/Module/DriveKv");
     private static final LoggedTunableNumber driveKt = new LoggedTunableNumber("Drivetrain/Module/DriveKt");
     private static final LoggedTunableNumber driveKp = new LoggedTunableNumber("Drivetrain/Module/DriveKp");
@@ -53,7 +47,7 @@ public class Module {
     
 
     public final ModuleIO io;
-    public final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
+    public ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
     private final int index;
     
     private SimpleMotorFeedforward ffModel;
@@ -82,6 +76,8 @@ public class Module {
     }
     
     public void periodic(){
+        updateInputs();
+
         if(driveKs.hasChanged(hashCode()) || driveKv.hasChanged(hashCode())){
             ffModel = new SimpleMotorFeedforward(driveKs.get(), driveKv.get());
         }
@@ -101,8 +97,8 @@ public class Module {
             Rotation2d angle = inputs.odometryTurnPositions[i];
             odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
         }
-
-
+        // System.out.println(inputs.data.driveConnected());
+        
         driveDisconnected.set(!inputs.data.driveConnected());
         turnDisconnected.set(!inputs.data.turnConnected());
         turnEncoderDisconnected.set(!inputs.data.turnEncoderConnected());
