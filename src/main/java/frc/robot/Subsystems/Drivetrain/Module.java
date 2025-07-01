@@ -14,13 +14,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
-import frc.robot.Subsystems.ModuleIOInputsAutoLogged;
 import frc.robot.Util.Constants;
 import frc.robot.Util.LoggedTracer;
 import frc.robot.Util.LoggedTunableNumber;
 
 public class Module {
-    private static final LoggedTunableNumber driveKs = new LoggedTunableNumber("Drivetrain/Module/DriveKs");
+    private static final LoggedTunableNumber driveKs = new LoggedTunableNumber("/Tuning/WOW/Module/DriveKs");
     private static final LoggedTunableNumber driveKv = new LoggedTunableNumber("Drivetrain/Module/DriveKv");
     private static final LoggedTunableNumber driveKt = new LoggedTunableNumber("Drivetrain/Module/DriveKt");
     private static final LoggedTunableNumber driveKp = new LoggedTunableNumber("Drivetrain/Module/DriveKp");
@@ -149,6 +148,9 @@ public class Module {
         return odometryPositions;
     }
 
+    public double[] getOdometryTimestamps(){
+        return inputs.odometryTimestamps;
+    }
 
     public Rotation2d getAngle(){
         return inputs.data.turnPositionRad();

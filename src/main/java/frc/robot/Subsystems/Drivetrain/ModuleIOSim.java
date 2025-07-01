@@ -4,11 +4,9 @@ package frc.robot.Subsystems.Drivetrain;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class ModuleIOSim implements ModuleIO {
@@ -16,13 +14,13 @@ public class ModuleIOSim implements ModuleIO {
     private static final DCMotor turnMotor = DCMotor.getKrakenX60(1);
 
     private final DCMotorSim driveSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(driveMotor, 1, 1), driveMotor);
-    private final DCMotorSim turnSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(turnMotor, 0, 0), turnMotor);
+    private final DCMotorSim turnSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(turnMotor, 1, 1), turnMotor);
 
     private boolean driveClosedLoop = false;
     private boolean turnClosedLoop = false;
 
-    private PIDController driveController = new PIDController(0, 0, 0);
-    private PIDController turnController = new PIDController(0, 0, 0);
+    private PIDController driveController = new PIDController(0.3, 0, 0);
+    private PIDController turnController = new PIDController(0.3, 0, 0);
 
     private double driveFFVolts = 0;
     private double driveAppliedVolts = 0;
@@ -54,8 +52,10 @@ public class ModuleIOSim implements ModuleIO {
 
 
         input.data = new ModuleIOData(true, driveSim.getAngularPositionRad(), driveSim.getAngularVelocityRadPerSec(), driveAppliedVolts, Math.abs(driveSim.getCurrentDrawAmps()),0.0 , true, true, new Rotation2d(turnSim.getAngularPositionRad()), new Rotation2d(turnSim.getAngularPositionRad()), turnSim.getAngularVelocityRadPerSec(), turnAppliedVolts, Math.abs(turnSim.getCurrentDrawAmps()), 0.0);
+        input.odometryTimestamps = new double[]{Timer.getFPGATimestamp()};
         input.odometryDrivePositionsRad = new double[]{input.data.drivePositionRad()};
         input.odometryTurnPositions = new Rotation2d[]{input.data.turnPositionRad()};
+        
          
     }
 

@@ -18,7 +18,7 @@ public class DrivetrainConstants {
     public static final double kWheelRadius = Units.inchesToMeters(4);
     public static final double kDriveTrainWidth = Units.inchesToMeters(24.6);
     public static final double kDriveTrainLength = Units.inchesToMeters(24.6);;//todo: real value
-    public static final double kDriveTrainMaxSpeedMPS = 3.0; //TODO: real value
+    public static final double kDriveTrainMaxSpeedMPS = 6.8; //TODO: real value
     public static final double kDriveTrainMaxAngularVelocityRadsPerSec = Math.PI; //TODO: real value
     public static final double kLoopTime = 0.02;
     public static final double odometryFrequency = 250.0; //Hz, how often the odometry thread runs, this should be higher than the loop time of the robot code to ensure that the odometry is updated more frequently than the robot code runs. 

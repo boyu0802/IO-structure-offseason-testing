@@ -14,6 +14,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Util.Constants;
+import frc.robot.Util.Constants.RobotMode;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
@@ -27,11 +29,15 @@ public class Robot extends LoggedRobot {
       Logger.addDataReceiver(new WPILOGWriter());
       Logger.addDataReceiver(new NT4Publisher());
     }else{
-      setUseTiming(false);
-      String logPath = LogFileUtil.findReplayLog();
-      Logger.setReplaySource(new WPILOGReader(logPath));
-      Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-
+      if(Constants.getRobotType() == RobotMode.Replay){
+        setUseTiming(false);
+        String logPath = LogFileUtil.findReplayLog();
+        Logger.setReplaySource(new WPILOGReader(logPath));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+      }else{
+        System.out.println("in sim");
+        Logger.addDataReceiver(new NT4Publisher());
+      }
     }
 
     Logger.start();

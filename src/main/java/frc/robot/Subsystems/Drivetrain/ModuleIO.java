@@ -12,7 +12,7 @@ public interface ModuleIO {
         public ModuleIOData data = new ModuleIOData(
             false,0,0,0,0,0,false,false,Rotation2d.kZero,Rotation2d.kZero,0,0,0,0
         );
-
+        public double[] odometryTimestamps = new double[] {};
         public double[] odometryDrivePositionsRad = new double[]{};
         public Rotation2d[] odometryTurnPositions = new Rotation2d[]{}; 
     }

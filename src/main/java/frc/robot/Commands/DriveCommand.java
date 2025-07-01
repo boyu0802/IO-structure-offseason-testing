@@ -39,7 +39,7 @@ public class DriveCommand extends Command{
         yValue *= DrivetrainConstants.kDriveTrainMaxSpeedMPS;
         thetaValue *= DrivetrainConstants.kDriveTrainMaxAngularVelocityRadsPerSec;
 
-        speeds = new ChassisSpeeds().fromFieldRelativeSpeeds(xValue, yValue, thetaValue, RobotState.getInstance().getRobotYaw());
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue, yValue, thetaValue, RobotState.getInstance().getRobotYaw());
 
         drivetrain.runVelocity(speeds);
     }

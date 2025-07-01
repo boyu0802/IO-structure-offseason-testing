@@ -29,7 +29,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Subsystems.Drivetrain.DrivetrainConstants.ModuleConstants;
 import frc.robot.Subsystems.Drivetrain.ModuleIO.ModuleIOData;
 
-public class ModuleIOKraken {
+public class ModuleIOKraken implements ModuleIO {
     
     private final TalonFX driveMotor;
     private final TalonFX turnMotor;
@@ -60,6 +60,9 @@ public class ModuleIOKraken {
     private final StatusSignal<Current> turnSupplyCurrent;
     private final StatusSignal<Current> turnTorqueCurrent;
 
+    private final Queue<Double> odometryTimeStampsQueue;
+
+
     public ModuleIOKraken(ModuleConstants constants){
         driveMotor = new TalonFX(constants.driveMotorID());
         turnMotor = new TalonFX(constants.angleMotorID());
@@ -69,6 +72,8 @@ public class ModuleIOKraken {
         driveConfig();
         turnConfig(constants);
         cancoderConfig(constants);
+
+        odometryTimeStampsQueue = OdometryThread.getOdometryThreadInstance().makeTimeStampQueue();
 
         drivePosition = driveMotor.getPosition();
         drivePositionQueue = OdometryThread.getOdometryThreadInstance().registerSignal(driveMotor.getPosition().clone());
@@ -126,6 +131,8 @@ public class ModuleIOKraken {
             drivePositionQueue.stream().mapToDouble(Units::rotationsToRadians).toArray();
         input.odometryTurnPositions = 
             turnPositionQueue.stream().map(Rotation2d::fromRotations).toArray(Rotation2d[]::new);
+        input.odometryTimestamps = odometryTimeStampsQueue.stream().mapToDouble((Double value)->value).toArray();
+        odometryTimeStampsQueue.clear();
         drivePositionQueue.clear();
         turnPositionQueue.clear();
     }
@@ -146,6 +153,8 @@ public class ModuleIOKraken {
     public void turnClosedLoop(Rotation2d position){
         turnMotor.setControl(positionTorqueCurrentRequest.withPosition(position.getRotations()));
     }
+
+
 
     private void driveConfig(){
         driveMotorConfig.Slot0 = new Slot0Configs().withKP(0).withKI(0).withKD(0);
