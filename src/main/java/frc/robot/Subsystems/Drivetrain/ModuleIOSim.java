@@ -1,7 +1,6 @@
 package frc.robot.Subsystems.Drivetrain;
 
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
@@ -16,8 +15,8 @@ public class ModuleIOSim implements ModuleIO {
     private static final DCMotor driveMotor = DCMotor.getKrakenX60(1);
     private static final DCMotor turnMotor = DCMotor.getKrakenX60(1);
 
-    private final DCMotorSim driveSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(driveMotor, 1, 1), driveMotor);
-    private final DCMotorSim turnSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(turnMotor, 1, 1), turnMotor);
+    private final DCMotorSim driveSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(driveMotor, 0.025, 1/DrivetrainConstants.DriveMotorGearRatio), driveMotor);
+    private final DCMotorSim turnSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(turnMotor, 0.004, 1/DrivetrainConstants.TurnMotorGearRatio), turnMotor);
 
     private boolean driveClosedLoop = false;
     private boolean turnClosedLoop = false;
@@ -48,9 +47,13 @@ public class ModuleIOSim implements ModuleIO {
             turnController.reset();
         }
 
-
-        driveSim.setInputVoltage(MathUtil.clamp(driveAppliedVolts,-12, 12));
-        turnSim.setInputVoltage(MathUtil.clamp(turnAppliedVolts,-12, 12));
+        Logger.recordOutput("/ModuleIO/driveFFVolts", driveFFVolts);
+        Logger.recordOutput("/ModuleIO/driveAppliedVolts", driveAppliedVolts);
+        Logger.recordOutput("ModuleIO/Drive/AngularVelocityRadPerSec", driveSim.getAngularVelocityRadPerSec());
+        driveAppliedVolts = MathUtil.clamp(driveAppliedVolts,-12, 12);
+        turnAppliedVolts = MathUtil.clamp(turnAppliedVolts, -12, 12);
+        driveSim.setInputVoltage(driveAppliedVolts);
+        turnSim.setInputVoltage(turnAppliedVolts);
         driveSim.update(0.02);
         turnSim.update(0.02);
 
@@ -87,6 +90,8 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void velocityDrive(double velocity,double ff){
+        Logger.recordOutput("ModuleIO/velocity setpoint",velocity);
+        Logger.recordOutput("ModuleIO/Feedforward",ff);
         driveClosedLoop = true;
         driveFFVolts = ff;
         driveController.setSetpoint(velocity);

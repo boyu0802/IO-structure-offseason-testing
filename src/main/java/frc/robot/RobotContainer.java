@@ -73,14 +73,14 @@ public class RobotContainer {
     } 
 
     
-    // drive.setDefaultCommand(
-    //   new DriveCommand(
-    //     drive,
-    //     () -> -driverController.getLeftY(),
-    //     () -> driverController.getLeftX(),
-    //     () -> driverController.getRightX()
-    //   )
-    // );
+    drive.setDefaultCommand(
+      new DriveCommand(
+        drive,
+        () -> -driverController.getLeftY(),
+        () -> driverController.getLeftX(),
+        () -> driverController.getRightX()
+      )
+    );
     
 
     configureBindings();

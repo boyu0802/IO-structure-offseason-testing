@@ -19,17 +19,17 @@ public class DrivetrainConstants {
     public static final double kDriveTrainWidth = Units.inchesToMeters(24.6);
     public static final double kDriveTrainLength = Units.inchesToMeters(24.6);;//todo: real value
     public static final double kDriveTrainMaxSpeedMPS = 6.8; //TODO: real value
-    public static final double kDriveTrainMaxAngularVelocityRadsPerSec = Math.PI; //TODO: real value
+    public static final double kDriveTrainMaxAngularVelocityRadsPerSec = 10; //TODO: real value
     public static final double kLoopTime = 0.02;
     public static final double odometryFrequency = 250.0; //Hz, how often the odometry thread runs, this should be higher than the loop time of the robot code to ensure that the odometry is updated more frequently than the robot code runs. 
     
     public static final double ROBOT_MASS_KG = 60.0; //TODO: real value, mass of the robot in kg
     public static final double ROBOT_MOI = 10.0; //TODO: real value, moment of inertia of the robot in kg*m^2
-    public static final double WHEEL_COF = 0.8; //TODO: real value, coefficient of friction of the wheels, this is used to calculate the maximum acceleration of the robot based on the mass and the coefficient of friction
+    public static final double WHEEL_COF = 1.2; //TODO: real value, coefficient of friction of the wheels, this is used to calculate the maximum acceleration of the robot based on the mass and the coefficient of friction
     
     public static final double DriveMotorGearRatio = 4.5; //TODO: real value, gear ratio of the drive motor, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
     public static final double TurnMotorGearRatio = 20.0; //TODO: real value, gear ratio of the turn motor, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
-    public static final double SlipCurrent = 0.5; //TODO: real value, current in amps that the motor will slip at, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
+    public static final double SlipCurrent = 120; //TODO: real value, current in amps that the motor will slip at, this is used to calculate the maximum speed of the robot based on the motor speed and the gear ratio
    
    public static final double CurrentLimit = 80;
    public static final double TurnCurrentLimit = 40;

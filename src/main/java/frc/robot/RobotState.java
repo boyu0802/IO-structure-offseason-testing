@@ -84,14 +84,17 @@ public class RobotState {
 
     public void addOdometry(OdometryRecord record){
         if(!record.gyroYaw.isPresent()){ //gyro not available in sim
-            Twist2d twist = kinematics.toTwist2d(lastModulePosition,record.modulePositions);
+            Twist2d twist = kinematics.toTwist2d(lastModulePosition,record.modulePositions());
+            Logger.recordOutput("RobotSTate/Odometry/lastModulePosition", lastModulePosition);
+            Logger.recordOutput("RobotSTate/Odometry/record Module Pos", record.modulePositions());
+            Logger.recordOutput("RobotSTate/Odometry/Twist", twist);
             lastGyroYaw = lastGyroYaw.plus(new Rotation2d(twist.dtheta));
 
         }else{
             lastGyroYaw = record.gyroYaw.get();
         }
 
-        lastModulePosition = record.modulePositions;
+        lastModulePosition = record.modulePositions();
 
         OdometryPose = odometry.update(lastGyroYaw,lastModulePosition);
         Logger.recordOutput("Odometry/pose", OdometryPose);
@@ -104,12 +107,15 @@ public class RobotState {
         poseEstimator.addVisionMeasurement(visionPose.getVisionEstimatedPose(), visionPose.getTimeStamp(), visionPose.getStdDev());
     }
 
+    @AutoLogOutput
     public Pose2d getRobotPose(){
         return poseEstimator.getEstimatedPosition();
     }
-
+    
+    @AutoLogOutput
     public Rotation2d getRobotYaw(){
-        return poseEstimator.getEstimatedPosition().getRotation();
+        // return poseEstimator.getEstimatedPosition().getRotation();
+        return lastGyroYaw;
     }
 
 

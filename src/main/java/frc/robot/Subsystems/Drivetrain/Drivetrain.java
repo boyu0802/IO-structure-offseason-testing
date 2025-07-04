@@ -33,7 +33,11 @@ public class Drivetrain extends SubsystemBase{
     private final GyroInputsAutoLogged gyroInputs = new GyroInputsAutoLogged();
     private final Module[] modules = new Module[4];
     private final Alert gyroDisconnectedAlert = new Alert("Gyro is disconnected", Alert.AlertType.kError);
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DrivetrainConstants.modulePositions);// FL,FR,BL,BR
+    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+        DrivetrainConstants.modulePositions[0],
+        DrivetrainConstants.modulePositions[1],
+        DrivetrainConstants.modulePositions[2],
+        DrivetrainConstants.modulePositions[3]);// FL,FR,BL,BR
 
     @AutoLogOutput private boolean velocityMode = false;
     @AutoLogOutput private boolean brakeModeOn = false;
@@ -82,6 +86,8 @@ public class Drivetrain extends SubsystemBase{
                 Optional.ofNullable(gyroInputs.data.connected() ? gyroInputs.odometryYawPositions[i] : null)));
 
         }
+
+        if(!velocityMode) currentSetpoint = new SwerveSetpoint(getChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(4));
         
     }
 
@@ -89,13 +95,21 @@ public class Drivetrain extends SubsystemBase{
         velocityMode = true;
         
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, DrivetrainConstants.kLoopTime);
+
         SwerveModuleState[] unoptimizedStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        // currentSetpoint = setpointGenerator.generateSetpoint(currentSetpoint, discreteSpeeds, DrivetrainConstants.kLoopTime);
-        // SwerveModuleState[] setpointStates = currentSetpoint.moduleStates();
+        SwerveDriveKinematics.desaturateWheelSpeeds(unoptimizedStates, DrivetrainConstants.kDriveTrainMaxSpeedMPS);
+        currentSetpoint = setpointGenerator.generateSetpoint(currentSetpoint, speeds, DrivetrainConstants.kLoopTime);
+        SwerveModuleState[] setpointStates = currentSetpoint.moduleStates();
+        Logger.recordOutput("Drivetrain/SwerveStates/Speeds", speeds );
+        Logger.recordOutput("Drivetrain/SwerveStates/currentSetpoint", currentSetpoint );
+        // Logger.recordOutput("Drivetrain/SwerveStates/generated setpoint",setpointGenerator.generateSetpoint(currentSetpoint, discreteSpeeds, DrivetrainConstants.kLoopTime));
+
+        // SwerveModuleState[] unoptimizedStates = kinematics.toSwerveModuleStates(speeds);
+        Logger.recordOutput("Drivetrain/SwerveStates/discrete speeds", discreteSpeeds );
 
         Logger.recordOutput("Drivetrain/SwerveStates/Unoptimized Setpoint", unoptimizedStates );
         // Logger.recordOutput("Drivetrain/SwerveStates/Optimized Setpoint", setpointStates);
-        // Logger.recordOutput("Drivetrain/SwerveChassisSpeeds/setPoint", currentSetpoint.robotRelativeSpeeds());
+        Logger.recordOutput("Drivetrain/SwerveChassisSpeeds/setPoint", currentSetpoint.robotRelativeSpeeds());
 
         for(int i = 0; i<4; i++){
             modules[i].runSetpoint(unoptimizedStates[i]);

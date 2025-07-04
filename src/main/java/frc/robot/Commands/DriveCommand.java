@@ -3,6 +3,9 @@ package frc.robot.Commands;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,8 +42,14 @@ public class DriveCommand extends Command{
         yValue *= DrivetrainConstants.kDriveTrainMaxSpeedMPS;
         thetaValue *= DrivetrainConstants.kDriveTrainMaxAngularVelocityRadsPerSec;
 
-        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue, yValue, thetaValue, RobotState.getInstance().getRobotYaw());
+        Logger.recordOutput("/DriveCommand/xVal",xValue);
+        Logger.recordOutput("/DriveCommand/yVal",yValue);
+        Logger.recordOutput("/DriveCommand/thetaVal",thetaValue);
 
+        speeds = ChassisSpeeds.fromRobotRelativeSpeeds(xValue,yValue,thetaValue,  RobotState.getInstance().getRobotYaw());
+        // speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue, yValue, thetaValue, RobotState.getInstance().getRobotYaw();
+        Logger.recordOutput("/DriveCommand/Speeds",speeds);
+        Logger.recordOutput("/DriveCommand/RobotYaw", RobotState.getInstance().getRobotYaw().getDegrees());
         drivetrain.runVelocity(speeds);
     }
 

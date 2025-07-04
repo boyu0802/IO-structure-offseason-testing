@@ -13,7 +13,7 @@ import frc.robot.Util.LoggedTracer;
 import frc.robot.Util.LoggedTunableNumber;
 
 public class Module {
-    private static final LoggedTunableNumber driveKs = new LoggedTunableNumber("WOW/Module/DriveKs",80);
+    private static final LoggedTunableNumber driveKs = new LoggedTunableNumber("Drivetrain/Module/DriveKs");
     private static final LoggedTunableNumber driveKv = new LoggedTunableNumber("Drivetrain/Module/DriveKv");
     private static final LoggedTunableNumber driveKt = new LoggedTunableNumber("Drivetrain/Module/DriveKt");
     private static final LoggedTunableNumber driveKp = new LoggedTunableNumber("Drivetrain/Module/DriveKp");
@@ -32,13 +32,13 @@ public class Module {
                 turnKp.initDefault(4000);
                 turnKd.initDefault(50.0);
             case Sim://TODO test values in voltage(Sim is in voltage)
-                driveKs.initDefault(5.0);   
+                driveKs.initDefault(0);   
                 driveKv.initDefault(0);
                 driveKt.initDefault(0); 
-                driveKp.initDefault(35);
+                driveKp.initDefault(0.5);
                 driveKd.initDefault(0);
-                turnKp.initDefault(4000);
-                turnKd.initDefault(50.0);
+                turnKp.initDefault(0.2);
+                turnKd.initDefault(0.09);
                 
         } 
 
@@ -108,6 +108,7 @@ public class Module {
 
     public void runSetpoint(SwerveModuleState state){
         double speedRadPerSec = state.speedMetersPerSecond / DrivetrainConstants.kWheelRadius;
+        Logger.recordOutput("Module/setpointSpeed",speedRadPerSec);
         io.velocityDrive(speedRadPerSec,ffModel.calculate(speedRadPerSec));
         io.positionTurn(state.angle);
     }
@@ -149,7 +150,7 @@ public class Module {
     }
 
     public Rotation2d getAngle(){
-        return inputs.data.turnPositionRad();
+        return Rotation2d.fromRadians(inputs.data.turnPositionRad().getRadians() % (2 *(Math.PI)));
     }
 
     public void setBrakeMode(boolean enabled){
