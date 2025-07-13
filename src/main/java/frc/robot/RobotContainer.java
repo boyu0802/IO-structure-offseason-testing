@@ -38,7 +38,7 @@ public class RobotContainer {
 
 
         drive = new Drivetrain(
-          new GyroIOPigeon(new Pigeon2(0)),
+          new GyroIOPigeon(),
           new ModuleIOKraken(DrivetrainConstants.FLModuleConstants),
           new ModuleIOKraken(DrivetrainConstants.FRModuleConstants),
           new ModuleIOKraken(DrivetrainConstants.BLModuleConstants),

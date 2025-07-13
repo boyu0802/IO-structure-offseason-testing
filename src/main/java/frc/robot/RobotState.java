@@ -84,11 +84,26 @@ public class RobotState {
 
     public void addOdometry(OdometryRecord record){
         if(!record.gyroYaw.isPresent()){ //gyro not available in sim
-            Twist2d twist = kinematics.toTwist2d(lastModulePosition,record.modulePositions());
-            Logger.recordOutput("RobotSTate/Odometry/lastModulePosition", lastModulePosition);
-            Logger.recordOutput("RobotSTate/Odometry/record Module Pos", record.modulePositions());
-            Logger.recordOutput("RobotSTate/Odometry/Twist", twist);
+            // Twist2d twist = kinematics.toTwist2d(lastModulePosition,record.modulePositions());
+            // Logger.recordOutput("RobotSTate/Odometry/lastModulePosition", lastModulePosition);
+            // Logger.recordOutput("RobotSTate/Odometry/record Module Pos", record.modulePositions());
+            // Logger.recordOutput("RobotSTate/Odometry/Twist", twist);
+            // double angularRate = twist.dtheta;
+            // lastGyroYaw = lastGyroYaw .rotateBy(Rotation2d.fromRadians(!Double.isNaN(angularRate) ? angularRate *0.02 : 0));
+            
+            SwerveModulePosition[] currentModulePositions = record.modulePositions();
+            SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+            for(int i = 0; i < 4; i++){
+                moduleDeltas[i] = new SwerveModulePosition(
+                    currentModulePositions[i].distanceMeters - lastModulePosition[i].distanceMeters,
+                    currentModulePositions[i].angle.minus(lastGyroYaw)
+                );
+            }
+            Twist2d twist = kinematics.toTwist2d(moduleDeltas);
             lastGyroYaw = lastGyroYaw.plus(new Rotation2d(twist.dtheta));
+            Logger.recordOutput("RobotState/Module 0 angle", currentModulePositions[0].angle.getDegrees()%360);
+            Logger.recordOutput("RobotSTate/Odometry/Twist", twist);
+
 
         }else{
             lastGyroYaw = record.gyroYaw.get();
@@ -98,8 +113,9 @@ public class RobotState {
 
         OdometryPose = odometry.update(lastGyroYaw,lastModulePosition);
         Logger.recordOutput("Odometry/pose", OdometryPose);
-        poseBuffer.addSample( record.timeStamp, OdometryPose);
-        poseEstimator.updateWithTime(record.timeStamp,lastGyroYaw, lastModulePosition);
+        Logger.recordOutput("Odometry/gyroYaw", lastGyroYaw.getDegrees());
+        // poseBuffer.addSample( record.timeStamp, OdometryPose);
+        // poseEstimator.updateWithTime(record.timeStamp,lastGyroYaw, lastModulePosition);
 
     }
 
@@ -112,7 +128,7 @@ public class RobotState {
         return poseEstimator.getEstimatedPosition();
     }
     
-    @AutoLogOutput
+    // @AutoLogOutput
     public Rotation2d getRobotYaw(){
         // return poseEstimator.getEstimatedPosition().getRotation();
         return lastGyroYaw;

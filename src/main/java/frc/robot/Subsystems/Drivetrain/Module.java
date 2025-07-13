@@ -37,8 +37,8 @@ public class Module {
                 driveKt.initDefault(0); 
                 driveKp.initDefault(0.5);
                 driveKd.initDefault(0);
-                turnKp.initDefault(0.2);
-                turnKd.initDefault(0.09);
+                turnKp.initDefault(0.5);
+                turnKd.initDefault(0.8);
                 
         } 
 

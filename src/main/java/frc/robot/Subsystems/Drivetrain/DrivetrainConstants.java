@@ -21,7 +21,9 @@ public class DrivetrainConstants {
     public static final double kDriveTrainMaxSpeedMPS = 6.8; //TODO: real value
     public static final double kDriveTrainMaxAngularVelocityRadsPerSec = 10; //TODO: real value
     public static final double kLoopTime = 0.02;
-    public static final double odometryFrequency = 250.0; //Hz, how often the odometry thread runs, this should be higher than the loop time of the robot code to ensure that the odometry is updated more frequently than the robot code runs. 
+
+    //TODO: make sure if not on CANFD use 100 or a value that doesn't cause too much CAN utilization
+    public static final double OdometryFrequency = 250.0; //Hz, how often the odometry thread runs, this should be higher than the loop time of the robot code to ensure that the odometry is updated more frequently than the robot code runs. 
     
     public static final double ROBOT_MASS_KG = 60.0; //TODO: real value, mass of the robot in kg
     public static final double ROBOT_MOI = 10.0; //TODO: real value, moment of inertia of the robot in kg*m^2
@@ -103,6 +105,8 @@ public class DrivetrainConstants {
         Rotation2d angleOffset
     ){}
 
+    public static final int PigeonID = 1;
+    
     
 
 }

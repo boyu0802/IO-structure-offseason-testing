@@ -98,18 +98,19 @@ public class Drivetrain extends SubsystemBase{
 
         SwerveModuleState[] unoptimizedStates = kinematics.toSwerveModuleStates(discreteSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(unoptimizedStates, DrivetrainConstants.kDriveTrainMaxSpeedMPS);
-        currentSetpoint = setpointGenerator.generateSetpoint(currentSetpoint, speeds, DrivetrainConstants.kLoopTime);
-        SwerveModuleState[] setpointStates = currentSetpoint.moduleStates();
-        Logger.recordOutput("Drivetrain/SwerveStates/Speeds", speeds );
-        Logger.recordOutput("Drivetrain/SwerveStates/currentSetpoint", currentSetpoint );
+        // currentSetpoint = setpointGenerator.generateSetpoint(currentSetpoint, speeds, DrivetrainConstants.kLoopTime);
+        // SwerveModuleState[] setpointStates = currentSetpoint.moduleStates();
+        // Logger.recordOutput("Drivetrain/SwerveStates/Speeds", speeds );
+        // Logger.recordOutput("Drivetrain/SwerveStates/currentSetpoint", currentSetpoint );
         // Logger.recordOutput("Drivetrain/SwerveStates/generated setpoint",setpointGenerator.generateSetpoint(currentSetpoint, discreteSpeeds, DrivetrainConstants.kLoopTime));
 
         // SwerveModuleState[] unoptimizedStates = kinematics.toSwerveModuleStates(speeds);
         Logger.recordOutput("Drivetrain/SwerveStates/discrete speeds", discreteSpeeds );
 
         Logger.recordOutput("Drivetrain/SwerveStates/Unoptimized Setpoint", unoptimizedStates );
+        Logger.recordOutput("Drivetrain/SWerveState/Unoptimized SEtpoint/angle", unoptimizedStates[0].angle.getDegrees());
         // Logger.recordOutput("Drivetrain/SwerveStates/Optimized Setpoint", setpointStates);
-        Logger.recordOutput("Drivetrain/SwerveChassisSpeeds/setPoint", currentSetpoint.robotRelativeSpeeds());
+        // Logger.recordOutput("Drivetrain/SwerveChassisSpeeds/setPoint", currentSetpoint.robotRelativeSpeeds());
 
         for(int i = 0; i<4; i++){
             modules[i].runSetpoint(unoptimizedStates[i]);

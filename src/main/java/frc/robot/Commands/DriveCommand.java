@@ -46,7 +46,7 @@ public class DriveCommand extends Command{
         Logger.recordOutput("/DriveCommand/yVal",yValue);
         Logger.recordOutput("/DriveCommand/thetaVal",thetaValue);
 
-        speeds = ChassisSpeeds.fromRobotRelativeSpeeds(xValue,yValue,thetaValue,  RobotState.getInstance().getRobotYaw());
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue,yValue,thetaValue,  RobotState.getInstance().getRobotYaw());
         // speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue, yValue, thetaValue, RobotState.getInstance().getRobotYaw();
         Logger.recordOutput("/DriveCommand/Speeds",speeds);
         Logger.recordOutput("/DriveCommand/RobotYaw", RobotState.getInstance().getRobotYaw().getDegrees());

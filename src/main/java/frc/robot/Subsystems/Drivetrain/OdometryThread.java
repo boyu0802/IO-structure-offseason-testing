@@ -63,20 +63,6 @@ public class OdometryThread extends Thread {
         return queue;
     }
 
-    public Queue<Double> registerSignal(DoubleSupplier signal){
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
-        signalLock.lock();
-        Drivetrain.odometryLock.lock();
-
-        try{
-            genericSignals.add(signal);
-            genericQueues.add(queue);
-        }finally{
-            signalLock.unlock();
-            Drivetrain.odometryLock.unlock();
-        }
-        return queue;
-    }
 
     public Queue<Double> makeTimeStampQueue(){
         Queue<Double> queue = new ArrayBlockingQueue<>(20);
