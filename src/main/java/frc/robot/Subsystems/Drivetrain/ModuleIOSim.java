@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
@@ -21,8 +22,8 @@ public class ModuleIOSim implements ModuleIO {
     private boolean driveClosedLoop = false;
     private boolean turnClosedLoop = false;
 
-    private PIDController driveController = new PIDController(0.3, 0, 0);
-    private PIDController turnController = new PIDController(0.3, 0, 0);
+    private PIDController driveController = new PIDController(0, 0, 0);
+    private PIDController turnController = new PIDController(0, 0, 0);
 
     private double driveFFVolts = 0;
     private double driveAppliedVolts = 0;
@@ -77,19 +78,19 @@ public class ModuleIOSim implements ModuleIO {
     }
 
     @Override
-    public void voltageDrive(double voltage){
+    public void driveVoltage(double voltage){
         driveClosedLoop = false;
         driveAppliedVolts = voltage;
     }
 
     @Override
-    public void voltageTurn(double voltage){
+    public void turnVoltage(double voltage){
         turnClosedLoop = false;
         turnAppliedVolts = voltage;
     }
 
     @Override
-    public void velocityDrive(double velocity,double ff){
+    public void driveVelocityVoltage(double velocity,double ff){
         Logger.recordOutput("ModuleIO/velocity setpoint",velocity);
         Logger.recordOutput("ModuleIO/Feedforward",ff);
         driveClosedLoop = true;
@@ -98,7 +99,7 @@ public class ModuleIOSim implements ModuleIO {
     }
 
     @Override
-    public void positionTurn(Rotation2d position){
+    public void turnPositionVoltage(Rotation2d position){
         turnClosedLoop = true;
         turnController.setSetpoint(position.getRadians());
     }

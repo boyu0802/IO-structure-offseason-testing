@@ -18,12 +18,10 @@ import edu.wpi.first.wpilibj.RobotController;
 public class OdometryThread extends Thread {
     private final Lock signalLock = new ReentrantLock();
     private BaseStatusSignal[] phoenixSignals = new BaseStatusSignal[0];
-    private final List<DoubleSupplier> genericSignals = new ArrayList<>();
     private final List<Queue<Double>> phoenixQueues = new ArrayList<>();
-    private final List<Queue<Double>> genericQueues = new ArrayList<>();
     private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
-    private static boolean isCANFD = new CANBus("*").isNetworkFD();
+    private static boolean isCANFD = new CANBus("rio").isNetworkFD();
     private static OdometryThread instance = null;
 
 
@@ -80,9 +78,9 @@ public class OdometryThread extends Thread {
             signalLock.lock();
             try{
                 if(isCANFD && phoenixSignals.length > 0){
-                    BaseStatusSignal.waitForAll(2.0/DrivetrainConstants.odometryFrequency, phoenixSignals);
+                    BaseStatusSignal.waitForAll(2.0/DrivetrainConstants.OdometryFrequency, phoenixSignals);
                 }else{
-                    Thread.sleep((long) (1000/DrivetrainConstants.odometryFrequency));
+                    Thread.sleep((long) (1000/DrivetrainConstants.OdometryFrequency));
                     if(phoenixSignals.length > 0)BaseStatusSignal.refreshAll(phoenixSignals);
                 }
 
@@ -107,10 +105,6 @@ public class OdometryThread extends Thread {
 
                 for(int i = 0; i < phoenixSignals.length; i ++){
                     phoenixQueues.get(i).offer(phoenixSignals[i].getValueAsDouble());
-                }
-
-                for (int i = 0; i < genericSignals.size(); i++) {
-                    genericQueues.get(i).offer(genericSignals.get(i).getAsDouble());
                 }
 
                 for(int i = 0; i < timestampQueues.size(); i ++){

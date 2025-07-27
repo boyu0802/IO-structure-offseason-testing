@@ -1,5 +1,7 @@
 package frc.robot.Subsystems.Drivetrain;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
@@ -21,7 +23,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
 import frc.robot.Util.LoggedTracer;
 
@@ -44,6 +48,19 @@ public class Drivetrain extends SubsystemBase{
 
     private final SwerveSetpointGenerator setpointGenerator;
     private SwerveSetpoint currentSetpoint;
+
+    private final SysIdRoutine driveMotorSysID = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            null,
+            null,
+            (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+        new SysIdRoutine.Mechanism(
+        (voltage) -> runCharacterization(voltage.in(Volts)),
+         null, 
+         this));
+
+
     // FL,FR,BL,BR
     public Drivetrain(GyroIO gyro, ModuleIO moduleIOFL, ModuleIO moduleIOFR, ModuleIO moduleIOBL, ModuleIO moduleIOBR) {
         this.gyro = gyro;
@@ -54,7 +71,7 @@ public class Drivetrain extends SubsystemBase{
         this.modules[3] = new Module(moduleIOBR,3);
         
         setBrakeMode(true);
-        this.setpointGenerator = new SwerveSetpointGenerator(DrivetrainConstants.kRobotConfig,DrivetrainConstants.kDriveTrainMaxAngularVelocityRadsPerSec);
+        this.setpointGenerator = new SwerveSetpointGenerator(DrivetrainConstants.kRobotConfig,DrivetrainConstants.kModuleMaxAngularSpeedRadPerSec);
         currentSetpoint = new SwerveSetpoint(getChassisSpeeds(),getModuleStates(), DriveFeedforwards.zeros(4));
 
         OdometryThread.getOdometryThreadInstance().start();
@@ -76,14 +93,14 @@ public class Drivetrain extends SubsystemBase{
         int sampleCount = sampleTimeStamps.length;
         for(int i = 0; i < sampleCount; i++){
             SwerveModulePosition[] wheelPosition = new SwerveModulePosition[4];
-            SwerveModuleState[] moduleStates = new SwerveModuleState[4];
+            // SwerveModuleState[] moduleStates = new SwerveModuleState[4];
             for(int j = 0; j < 4; j++){
                 wheelPosition[j] = modules[j].getOdometryPositions()[i];
             }
             RobotState.getInstance().addOdometry(new RobotState.OdometryRecord(
                 sampleTimeStamps[i], 
                 wheelPosition, 
-                Optional.ofNullable(gyroInputs.data.connected() ? gyroInputs.odometryYawPositions[i] : null)));
+                Optional.ofNullable(gyroInputs.data.connected() ? gyroInputs.gyroYawPositions[i] : null)));
 
         }
 
@@ -95,26 +112,33 @@ public class Drivetrain extends SubsystemBase{
         velocityMode = true;
         
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, DrivetrainConstants.kLoopTime);
-
+        
         SwerveModuleState[] unoptimizedStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(unoptimizedStates, DrivetrainConstants.kDriveTrainMaxSpeedMPS);
-        // currentSetpoint = setpointGenerator.generateSetpoint(currentSetpoint, speeds, DrivetrainConstants.kLoopTime);
-        // SwerveModuleState[] setpointStates = currentSetpoint.moduleStates();
-        // Logger.recordOutput("Drivetrain/SwerveStates/Speeds", speeds );
+        // SwerveDriveKinematics.desaturateWheelSpeeds(unoptimizedStates,DrivetrainConstants.kDriveTrainMaxSpeedMPS);
+        
+        // for(int i = 0; i < 4; i ++){
+        //     Rotation2d wheelAngle = getModuleStates()[i].angle;
+        //     unoptimizedStates[i].optimize(wheelAngle);
+        //     unoptimizedStates[i].cosineScale(wheelAngle);
+        // }
+        currentSetpoint = setpointGenerator.generateSetpoint(currentSetpoint, speeds, DrivetrainConstants.kLoopTime);
+        SwerveModuleState[] setpointStates = currentSetpoint.moduleStates();
+        Logger.recordOutput("Drivetrain/SwerveStates/Speeds", speeds );
         // Logger.recordOutput("Drivetrain/SwerveStates/currentSetpoint", currentSetpoint );
+
         // Logger.recordOutput("Drivetrain/SwerveStates/generated setpoint",setpointGenerator.generateSetpoint(currentSetpoint, discreteSpeeds, DrivetrainConstants.kLoopTime));
 
         // SwerveModuleState[] unoptimizedStates = kinematics.toSwerveModuleStates(speeds);
-        Logger.recordOutput("Drivetrain/SwerveStates/discrete speeds", discreteSpeeds );
+        // Logger.recordOutput("Drivetrain/SwerveStates/discrete speeds", discreteSpeeds );
 
         Logger.recordOutput("Drivetrain/SwerveStates/Unoptimized Setpoint", unoptimizedStates );
-        Logger.recordOutput("Drivetrain/SWerveState/Unoptimized SEtpoint/angle", unoptimizedStates[0].angle.getDegrees());
-        // Logger.recordOutput("Drivetrain/SwerveStates/Optimized Setpoint", setpointStates);
-        // Logger.recordOutput("Drivetrain/SwerveChassisSpeeds/setPoint", currentSetpoint.robotRelativeSpeeds());
+        // Logger.recordOutput("Drivetrain/SWerveState/Unoptimized SEtpoint/angle", unoptimizedStates[0].angle.getDegrees());
+        Logger.recordOutput("Drivetrain/SwerveStates/Optimized Setpoint", setpointStates);
+        Logger.recordOutput("Drivetrain/SwerveChassisSpeeds/Optimized States", currentSetpoint.robotRelativeSpeeds());
 
         for(int i = 0; i<4; i++){
-            modules[i].runSetpoint(unoptimizedStates[i]);
-            // modules[i].runSetpoint(setpointStates[i]);
+            // modules[i].runSetpoint(unoptimizedStates[i]);
+            modules[i].runSetpoint(setpointStates[i]);
         }
     }
 
@@ -185,12 +209,12 @@ public class Drivetrain extends SubsystemBase{
 
     public void stopX(){
         Rotation2d[] headings = new Rotation2d[modules.length];
-        for (int i = 0; i < modules.length; i++) {
-            headings[i] = DrivetrainConstants.modulePositions[i].getAngle();
-            modules[i].io.positionTurn(headings[i]);
-        }
+        // for (int i = 0; i < modules.length; i++) {
+        //     headings[i] = DrivetrainConstants.modulePositions[i].getAngle();
+        //     modules[i].io.turnVolt(headings[i]);
+        // }
         
-        // kinematics.resetHeadings(headings); //TODO: see if this one will work
+        kinematics.resetHeadings(headings); //TODO: see if this one will work
         stop();
     }
 
@@ -201,11 +225,22 @@ public class Drivetrain extends SubsystemBase{
         }
     }
 
+
+
+
+
     public void getWheelRadiusCharacterization(){
         
     }
 
 
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction){
+        return driveMotorSysID.quasistatic(direction);
+    }
+
     
+    public Command sysIdDynamic(SysIdRoutine.Direction direction){
+        return driveMotorSysID.dynamic(direction);
+    }
 
 }

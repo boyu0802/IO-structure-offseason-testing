@@ -30,7 +30,7 @@ public class GyroIOPigeon implements GyroIO {
         yawPositionQueue = OdometryThread.getOdometryThreadInstance().registerSignal(yawPosition.clone());
 
     }
-
+    
     public void updateInputs(GyroInputsAutoLogged inputs){
         inputs.data = 
             new GyroData(

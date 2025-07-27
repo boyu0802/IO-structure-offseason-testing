@@ -39,18 +39,12 @@ public class RobotState {
         new SwerveModulePosition()
       };
     private Rotation2d lastGyroYaw = new Rotation2d();
-    private double lastGyroAngularVelocity = 0.0;
-    private double lastAccelerationX = 0.0;
-    private double lastAccelerationY = 0.0;
-    private ChassisSpeeds lastChassisSpeeds = new ChassisSpeeds();
-
-    private Twist2d robotAcceleration = new Twist2d();
 
     private final SwerveDriveKinematics kinematics;
     private final SwerveDrivePoseEstimator poseEstimator;
     private final SwerveDriveOdometry odometry;
 
-    private boolean hasTarget = false;
+
 
     private final TimeInterpolatableBuffer<Pose2d> poseBuffer =
         TimeInterpolatableBuffer.createBuffer(2); //test time
@@ -114,8 +108,8 @@ public class RobotState {
         OdometryPose = odometry.update(lastGyroYaw,lastModulePosition);
         Logger.recordOutput("Odometry/pose", OdometryPose);
         Logger.recordOutput("Odometry/gyroYaw", lastGyroYaw.getDegrees());
-        // poseBuffer.addSample( record.timeStamp, OdometryPose);
-        // poseEstimator.updateWithTime(record.timeStamp,lastGyroYaw, lastModulePosition);
+        poseBuffer.addSample( record.timeStamp, OdometryPose);
+        poseEstimator.updateWithTime(record.timeStamp,lastGyroYaw, lastModulePosition);
 
     }
 
@@ -128,10 +122,10 @@ public class RobotState {
         return poseEstimator.getEstimatedPosition();
     }
     
-    // @AutoLogOutput
+    @AutoLogOutput
     public Rotation2d getRobotYaw(){
-        // return poseEstimator.getEstimatedPosition().getRotation();
-        return lastGyroYaw;
+        return poseEstimator.getEstimatedPosition().getRotation();
+        // return lastGyroYaw;
     }
 
 

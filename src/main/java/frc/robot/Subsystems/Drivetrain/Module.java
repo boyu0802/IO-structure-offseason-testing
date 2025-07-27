@@ -24,13 +24,13 @@ public class Module {
     static{
         switch (Constants.getRobotType()) {
             case Real,Replay: //TODO: test value in amps(current control)
-                driveKs.initDefault(5.0);   
-                driveKv.initDefault(0);
+                driveKs.initDefault(0.12913);   
+                driveKv.initDefault(0.084966);
                 driveKt.initDefault(DrivetrainConstants.DriveMotorGearRatio / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
-                driveKp.initDefault(35);
+                driveKp.initDefault(0.00056147);
                 driveKd.initDefault(0);
-                turnKp.initDefault(4000);
-                turnKd.initDefault(50.0);
+                turnKp.initDefault(100);
+                turnKd.initDefault(1.5009);
             case Sim://TODO test values in voltage(Sim is in voltage)
                 driveKs.initDefault(0);   
                 driveKv.initDefault(0);
@@ -109,21 +109,46 @@ public class Module {
     public void runSetpoint(SwerveModuleState state){
         double speedRadPerSec = state.speedMetersPerSecond / DrivetrainConstants.kWheelRadius;
         Logger.recordOutput("Module/setpointSpeed",speedRadPerSec);
-        io.velocityDrive(speedRadPerSec,ffModel.calculate(speedRadPerSec));
-        io.positionTurn(state.angle);
+        // io.driveVelocityTorqueCurrent(speedRadPerSec,ffModel.calculate(speedRadPerSec));
+        // io.turnPositionTorqueCurrent(state.angle);
+        
+        //using voltage right now
+        io.driveVelocityVoltage(speedRadPerSec,ffModel.calculate(speedRadPerSec));
+        io.turnPositionVoltage(state.angle);
     }
 
     public void runSetpoint(SwerveModuleState state, double desiredWheelTorque){
         double speedRadPerSec = state.speedMetersPerSecond / DrivetrainConstants.kWheelRadius;
         double ff = ffModel.calculate(speedRadPerSec) + (driveKt.get() * desiredWheelTorque); //ff is in amps
-        io.velocityDrive(speedRadPerSec, ff);
-        io.positionTurn(state.angle);
+    
+        io.driveVelocityTorqueCurrent(speedRadPerSec, ff);
+        io.turnPositionTorqueCurrent(state.angle);
     }
 
     public void runCharacterization(double voltage){
-        io.voltageDrive(voltage);
-        io.positionTurn(Rotation2d.kZero);
+        // using voltage right now
+        // io.driveTorqueCurrent(voltage);
+        // io.turnPositionTorqueCurrent(Rotation2d.kZero);
+
+        io.driveVoltage(voltage);
+        io.turnPositionVoltage(Rotation2d.kZero);
     }
+
+    // public void runCharacterization(double voltage) {
+    //     //using voltage right now
+        // io.driveTorqueCurrent(0);
+        // io.turnTorqueCurrent(voltage);
+    //     // io.driveVoltage(0.0);
+    //     // io.turnVoltage(voltage);
+
+    // }
+
+    // public void runCharacterization(double output) {
+    //     io.driveVoltage(output);
+    //     io.turnPositionVoltage(DrivetrainConstants.modulePositions[index].getAngle().plus(Rotation2d.kCCW_Pi_2));
+    // }
+
+    
 
     public double getPositionMeters(){
         return inputs.data.drivePositionRad() * DrivetrainConstants.kWheelRadius;

@@ -4,11 +4,10 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
-
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Commands.DriveCommand;
 import frc.robot.Subsystems.Drivetrain.Drivetrain;
 import frc.robot.Subsystems.Drivetrain.DrivetrainConstants;
@@ -26,7 +25,7 @@ public class RobotContainer {
   private Drivetrain drive;
   private VisionSubsystem vision;
   private DriveCommand driveCommand;
-  private XboxController driverController = new XboxController(0);
+  private CommandXboxController driverController = new CommandXboxController(0);
 
   public RobotContainer() {
 
@@ -77,7 +76,7 @@ public class RobotContainer {
       new DriveCommand(
         drive,
         () -> -driverController.getLeftY(),
-        () -> driverController.getLeftX(),
+        () -> -driverController.getLeftX(),
         () -> driverController.getRightX()
       )
     );
@@ -86,7 +85,14 @@ public class RobotContainer {
     configureBindings();
   }
 
-  private void configureBindings() {}
+  private void configureBindings() {
+    driverController.a().whileTrue(drive.sysIdDynamic(Direction.kForward));
+    driverController.b().whileTrue(drive.sysIdDynamic(Direction.kReverse));
+    driverController.x().whileTrue(drive.sysIdQuasistatic(Direction.kForward));
+    driverController.y().whileTrue(drive.sysIdQuasistatic(Direction.kReverse));
+
+
+  }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");

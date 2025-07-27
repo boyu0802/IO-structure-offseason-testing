@@ -1,8 +1,8 @@
 package frc.robot.Subsystems.Drivetrain;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.util.Queue;
+
+import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -10,15 +10,17 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.pathplanner.lib.config.ModuleConfig;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -27,7 +29,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Subsystems.Drivetrain.DrivetrainConstants.ModuleConstants;
-import frc.robot.Subsystems.Drivetrain.ModuleIO.ModuleIOData;
 
 public class ModuleIOKraken implements ModuleIO {
     
@@ -44,6 +45,10 @@ public class ModuleIOKraken implements ModuleIO {
     private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
     private final PositionTorqueCurrentFOC positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0);
     private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest = new VelocityTorqueCurrentFOC(0);
+
+    private final VoltageOut voltageRequest = new VoltageOut(0);
+    private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0);
+    private final PositionVoltage positionVoltageRequest = new PositionVoltage(0);
 
     private final StatusSignal<Angle> drivePosition;
     private final Queue<Double> drivePositionQueue;
@@ -69,7 +74,7 @@ public class ModuleIOKraken implements ModuleIO {
         cancoder = new CANcoder(constants.cancoderID());
         encoderOffset = constants.angleOffset();
 
-        driveConfig();
+        driveConfig(constants);
         turnConfig(constants);
         cancoderConfig(constants);
 
@@ -89,9 +94,9 @@ public class ModuleIOKraken implements ModuleIO {
         turnAppliedVolts = turnMotor.getMotorVoltage();
         turnSupplyCurrent = turnMotor.getSupplyCurrent();
         turnTorqueCurrent = turnMotor.getTorqueCurrent();
-
+        
         BaseStatusSignal.setUpdateFrequencyForAll(50,driveVelocity,driveAppliedVolts,driveSupplyCurrent,driveTorqueCurrent,turnAppliedVolts,turnVelocity,turnSupplyCurrent,turnTorqueCurrent);
-        BaseStatusSignal.setUpdateFrequencyForAll(250,drivePosition,turnPosition,turnAbsolutePosition);
+        BaseStatusSignal.setUpdateFrequencyForAll(DrivetrainConstants.OdometryFrequency,drivePosition,turnPosition,turnAbsolutePosition);
 
         ParentDevice.optimizeBusUtilizationForAll(driveMotor,turnMotor,cancoder);
         
@@ -99,6 +104,10 @@ public class ModuleIOKraken implements ModuleIO {
     }
 
     public void updateInputs(ModuleIO.ModuleIOInputs input){
+        Logger.recordOutput("turnPosition", turnPosition.getValueAsDouble());
+        // Logger.recordOutput("turnPosition2", turnMotor.getPosition().getValueAsDouble());
+        BaseStatusSignal.refreshAll(drivePosition,driveVelocity,driveSupplyCurrent,driveTorqueCurrent,driveAppliedVolts,turnPosition,turnAbsolutePosition,turnVelocity,turnSupplyCurrent,turnTorqueCurrent,turnAppliedVolts);
+
         input.data = new ModuleIOData(
             BaseStatusSignal.isAllGood(
                 drivePosition,
@@ -137,26 +146,50 @@ public class ModuleIOKraken implements ModuleIO {
         turnPositionQueue.clear();
     }
 
+    public void setDrivePID(double kP, double kI, double kD){
+        driveMotor.getConfigurator().apply(new Slot0Configs().withKP(kP).withKI(kI).withKD(kD));
+    }
 
-    public void driveOpenLoop(double output){
+    public void setTurnPID(double kP, double kI, double kD){
+        turnMotor.getConfigurator().apply(new Slot0Configs().withKP(kP).withKI(kI).withKD(kD));
+    }
+
+    public void driveTorqueCurrent(double output){
         driveMotor.setControl(torqueCurrentRequest.withOutput(output));
     }
 
-    public void turnOpenLoop(double output){
+    public void turnTorqueCurrent(double output){
         turnMotor.setControl(torqueCurrentRequest.withOutput(output));
     }
 
-    public void driveClosedLoop(double velocity, double ff){
+    public void driveVelocityTorqueCurrent(double velocity, double ff){
         driveMotor.setControl(velocityTorqueCurrentRequest.withVelocity(Units.radiansToRotations(velocity)).withFeedForward(ff));
     }
 
-    public void turnClosedLoop(Rotation2d position){
+    public void turnPositionTorqueCurrent(Rotation2d position){
         turnMotor.setControl(positionTorqueCurrentRequest.withPosition(position.getRotations()));
     }
 
+    public void driveVoltage(double output){
+        driveMotor.setControl(voltageRequest.withOutput(output));
+    }
+
+    public void turnVoltage(double output){
+        turnMotor.setControl(voltageRequest.withOutput(output));
+    }
+
+    public void driveVelocityVoltage(double velocity, double ff){
+        driveMotor.setControl(velocityVoltageRequest.withVelocity(Units.radiansToRotations(velocity)).withFeedForward(ff));
+    }
+
+    public void turnPositionVoltage(Rotation2d position){
+        turnMotor.setControl(positionVoltageRequest.withPosition(position.getRotations()));
+    }
+    
 
 
-    private void driveConfig(){
+
+    private void driveConfig(ModuleConstants constants){
         driveMotorConfig.Slot0 = new Slot0Configs().withKP(0).withKI(0).withKD(0);
         driveMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveMotorConfig.Feedback.SensorToMechanismRatio = DrivetrainConstants.DriveMotorGearRatio ;
@@ -164,6 +197,7 @@ public class ModuleIOKraken implements ModuleIO {
         driveMotorConfig.TorqueCurrent.PeakForwardTorqueCurrent = DrivetrainConstants.CurrentLimit;
         driveMotorConfig.CurrentLimits.StatorCurrentLimit = DrivetrainConstants.CurrentLimit;
         driveMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        driveMotorConfig.MotorOutput.Inverted = constants.driveInvertedValue();
         driveMotor.getConfigurator().apply(driveMotorConfig);
         driveMotor.setPosition(0, 0.25);
     }
@@ -171,12 +205,12 @@ public class ModuleIOKraken implements ModuleIO {
     private void turnConfig(ModuleConstants constants){
         turnMotorConfig.Slot0 = new Slot0Configs().withKP(0).withKI(0).withKD(0);
         turnMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        turnMotorConfig.Feedback.SensorToMechanismRatio = DrivetrainConstants.TurnMotorGearRatio ;
+        turnMotorConfig.Feedback.RotorToSensorRatio = DrivetrainConstants.TurnMotorGearRatio ;
         turnMotorConfig.TorqueCurrent.PeakReverseTorqueCurrent = -DrivetrainConstants.TurnCurrentLimit;
         turnMotorConfig.TorqueCurrent.PeakForwardTorqueCurrent = DrivetrainConstants.TurnCurrentLimit;
         turnMotorConfig.CurrentLimits.StatorCurrentLimit = DrivetrainConstants.TurnCurrentLimit;
         turnMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        turnMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;//changed to fused if pheonix pro
+        turnMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;//changed to fused if pheonix pro
         turnMotorConfig.Feedback.FeedbackRemoteSensorID = constants.cancoderID();
         turnMotorConfig.ClosedLoopGeneral.ContinuousWrap = true; 
         turnMotorConfig.MotorOutput.Inverted = constants.angleInvertedValue(); 
@@ -185,7 +219,7 @@ public class ModuleIOKraken implements ModuleIO {
 
     private void cancoderConfig(ModuleConstants constants){
         cancoderConfig.MagnetSensor.SensorDirection = constants.cancoderDirectionValue();
-        cancoderConfig.MagnetSensor.MagnetOffset = constants.angleOffset().getRadians();
+        cancoderConfig.MagnetSensor.MagnetOffset = constants.angleOffset().getRotations();
         cancoder.getConfigurator().apply(cancoderConfig);
     }
 

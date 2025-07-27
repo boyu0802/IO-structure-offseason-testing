@@ -40,7 +40,7 @@ public class DriveCommand extends Command{
 
         xValue *= DrivetrainConstants.kDriveTrainMaxSpeedMPS;
         yValue *= DrivetrainConstants.kDriveTrainMaxSpeedMPS;
-        thetaValue *= DrivetrainConstants.kDriveTrainMaxAngularVelocityRadsPerSec;
+        thetaValue *= DrivetrainConstants.kDriveTrainMaxAngularSpeedRadsPerSec;
 
         Logger.recordOutput("/DriveCommand/xVal",xValue);
         Logger.recordOutput("/DriveCommand/yVal",yValue);
@@ -48,8 +48,8 @@ public class DriveCommand extends Command{
 
         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue,yValue,thetaValue,  RobotState.getInstance().getRobotYaw());
         // speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xValue, yValue, thetaValue, RobotState.getInstance().getRobotYaw();
-        Logger.recordOutput("/DriveCommand/Speeds",speeds);
-        Logger.recordOutput("/DriveCommand/RobotYaw", RobotState.getInstance().getRobotYaw().getDegrees());
+        // Logger.recordOutput("/DriveCommand/Speeds",speeds);
+        // Logger.recordOutput("/DriveCommand/RobotYaw", RobotState.getInstance().getRobotYaw().getDegrees());
         drivetrain.runVelocity(speeds);
     }
 
